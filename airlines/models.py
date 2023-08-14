@@ -60,8 +60,8 @@ class Crew(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE)
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE)
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_airports")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_airports")
     distance = models.IntegerField()
     # image = models.ImageField(null=True, upload_to=image_file_path
 
@@ -71,9 +71,9 @@ class Route(models.Model):
     def __str__(self):
         return f"{self.source} - {self.destination}"
 
-    @property
-    def flying_time(self):
-        return f""
+    # @property
+    # def flying_time(self):
+    #     return f""
 
 
 class Flight(models.Model):
@@ -83,7 +83,7 @@ class Flight(models.Model):
     arrival_time = models.DateTimeField()
 
     class Meta:
-        ordering = ["-show_time"]
+        ordering = ["-departure_time"]
 
     def __str__(self):
         return f"{self.route}, str({self.departure_time})"
