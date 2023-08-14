@@ -254,17 +254,19 @@ class OrderViewSet(
 #     pagination_class = OrderPagination
 #     permission_classes = (IsAuthenticated,)
 #
-#     def get_queryset(self):
-#         return Order.objects.filter(user=self.request.user)
+
+    """The function limits the ability of the user to view other user's orders"""
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
 #
 #     def get_serializer_class(self):
 #         if self.action == "list":
 #             return OrderListSerializer
 #
 #         return OrderSerializer
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
+    """The function automatically create an order exactly for current user"""
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 # class MovieViewSet(
 #     mixins.ListModelMixin,
