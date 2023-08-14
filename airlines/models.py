@@ -51,6 +51,9 @@ class Crew(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
+    class Meta:
+        verbose_name_plural = "crew"
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
@@ -62,7 +65,7 @@ class Crew(models.Model):
 class Route(models.Model):
     source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_airports")
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_airports")
-    distance = models.IntegerField()
+    # distance = models.IntegerField()
     # image = models.ImageField(null=True, upload_to=image_file_path
 
     class Meta:

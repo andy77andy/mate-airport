@@ -50,14 +50,22 @@
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #
-# class AirplaneViewSet(
-#     mixins.CreateModelMixin,
-#     mixins.ListModelMixin,
-#     GenericViewSet,
-# ):
-#     queryset = Airplaneobjects.all()
-#     serializer_class = AirplaneSerializer
-#     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+from django.db.models import F, Count
+from rest_framework import mixins, viewsets
+from rest_framework.viewsets import GenericViewSet
+
+from airlines.models import Airplane, Crew, Flight, Route, Order
+from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer
+
+
+class AirplaneViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
+    queryset = Airplane.objects.all()
+    serializer_class = AirplaneSerializer
+    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #     @action(
 #         methods=["POST"],
@@ -75,17 +83,17 @@
 #             return Response(serializer.data, status=status.HTTP_200_OK)
 #
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#
-# class CrewViewSet(
-#     mixins.CreateModelMixin,
-#     mixins.ListModelMixin,
-#     mixins.DestroyModelMixin,
-#     GenericViewSet,
-# ):
-#     queryset = Crew.objects.all()
-#     serializer_class = CrewSerializer
-#     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
+class CrewViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = Crew.objects.all()
+    serializer_class = CrewSerializer
+    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #     @action(
 #         methods=["POST"],
@@ -106,17 +114,17 @@
 #
 #
 #
-# class FlightViewSet(
-#     viewsets.ModelViewSet,
-# ):
-#     queryset = Flight.objects.select_related("route", "airplane")
-#     .annotate(
-#         tickets_available=(
-#                 F("airplane__rows") * F("airplane_seats_in_row")
-#                 - Count("tickets")
-#         )
-#     )
-#
+
+class FlightViewSet(
+    viewsets.ModelViewSet,
+):
+    queryset = Flight.objects.select_related("route", "airplane").annotate(
+        tickets_available=(
+                F("airplane__rows") * F("airplane_seats_in_row")
+                - Count("tickets")
+        )
+    )
+
 #
 # serializer_class = Flighterializer
 # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -184,9 +192,9 @@
 #     return super().list(request, *args, **kwargs)
 #
 #
-# class RouteViewSet(viewsets.ModelViewSet):
-#     queryset = Route.objects.all()
-#     serializer_class = RouteSerializer
+class RouteViewSet(viewsets.ModelViewSet):
+    queryset = Route.objects.all()
+    serializer_class = RouteSerializer
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #     def get_queryset(self):
@@ -232,15 +240,17 @@
 #     max_page_size = 100
 #
 #
-# class OrderViewSet(
-#     mixins.ListModelMixin,
-#     mixins.CreateModelMixin,
-#     GenericViewSet,
-# ):
-#     queryset = Order.objects.prefetch_related(
-#         "tickets__movie_session__movie", "tickets__movie_session__cinema_hall"
-#     )
-#     serializer_class = OrderSerializer
+
+
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Order.objects.prefetch_related(
+        "tickets__movie_session__movie", "tickets__movie_session__cinema_hall"
+    )
+    serializer_class = OrderSerializer
 #     pagination_class = OrderPagination
 #     permission_classes = (IsAuthenticated,)
 #
