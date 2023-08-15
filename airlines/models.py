@@ -117,30 +117,29 @@ class Ticket(models.Model):
         Order, on_delete=models.CASCADE, related_name="tickets"
     )
 
-    # @staticmethod
-    # def validate_ticket(row, seat, airplane, error_to_raise):
-    #     for ticket_attr_value, ticket_attr_name, airplane_attr_name in [
-    #         (row, "row", "rows"),
-    #         (seat, "seat", "seats_in_row"),
-    #     ]:
-    #         count_attrs = getattr(airplane, airplane_attr_name)
-    #         if not (1 <= ticket_attr_value <= count_attrs):
-    #             raise error_to_raise(
-    #                 {
-    #                     ticket_attr_name: f"{ticket_attr_name} "
-    #                     f"number must be in available range: "
-    #                     f"(1, {airplane_attr_name}): "
-    #                     f"(1, {count_attrs})"
-    #                 }
-    #             )
-    #
-    # def clean(self):
-    #     Ticket.validate_ticket(
-    #         self.row,
-    #         self.seat,
-    #         self.flight.airplane,
-    #         ValidationError,
-    #     )
+    @staticmethod
+    def validate_seat_and_row(seat: int, seats_in_row: int, row: int, rows: int, error_to_raise):
+        if not (1 <= seat <= seats_in_row):
+            raise error_to_raise({
+                "seat": f"seat must be in the range [1, {seats_in_row}]"
+            })
+        if not (1 <= row <= rows):
+            raise error_to_raise({
+                "seat": f"row must be in the range [1, {rows}]"
+            })
+
+    def clean(self):
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight.airplane.seats_in_row,
+            self.flight.airplane.rows,
+            ValidationError,
+        )
+
+
+    class Meta:
+        unique_together = ("seat", "row")
     #
     # def save(
     #     self,

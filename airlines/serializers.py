@@ -33,6 +33,17 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Route
         fields = ("id", "source", "destination",)
 
+    def validate(self, attrs):
+        data = super(TicketSerializer, self).validate(attrs)
+        Ticket.validate_seat_and_row(
+            attrs["seat"],
+            attrs["flight"].airplane.seats_in_row,
+            attrs["row"],
+            attrs["flight"].airplane.rows,
+            serializers.ValidationError
+        )
+        return data
+
 
 class OrderSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
@@ -41,6 +52,8 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ("id", "tickets", "created_at", )
 
+
+    '''redefine method create to allow create tivkets while creating order'''
     def create(self, validated_data):
         with transaction.atomic():
             tickets_data = validated_data.pop("tickets")
