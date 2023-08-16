@@ -1,5 +1,5 @@
 # from django.shortcuts import render
-# from datetime import datetime
+from datetime import datetime
 #
 # from django.db.models import F, Count
 # from drf_spectacular.types import OpenApiTypes
@@ -49,13 +49,14 @@
 #     serializer_class = AirportSerializer
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
-#
+
 from django.db.models import F, Count
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
-from airlines.models import Airplane, Crew, Flight, Route, Order
-from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer
+from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType
+from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
+    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer
 
 
 class AirplaneViewSet(
@@ -66,6 +67,14 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+class AirplaneTypeViewSet(
+    viewsets.ModelViewSet,
+):
+    queryset = AirplaneType.objects.all()
+    serializer_class = AirplaneTypeSerializer
+
+
 #
 #     @action(
 #         methods=["POST"],
@@ -120,41 +129,56 @@ class FlightViewSet(
 ):
     queryset = Flight.objects.select_related("route", "airplane").annotate(
         tickets_available=(
-                F("airplane__rows") * F("airplane_seats_in_row")
+                F("airplane__rows") * F("airplane__seats_in_row")
                 - Count("tickets")
         )
     )
 
 #
-# serializer_class = Flighterializer
 # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #
-# @staticmethod
-# def _params_to_ints(qs):
-#     """Converts a list of string IDs to a list of integers"""
-#     return [int(str_id) for str_id in qs.split(",")]
+    @staticmethod
+    def _params_to_ints(qs):
+        """Converts a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(",")]
+
+
+    def get_queryset(self):
+        """Retrieve the movies with filters"""
+        route = self.request.query_params.get("route")
+        departure_time = self.request.query_params.get("departure_time")
+        arrival_time = self.request.query_params.get("arrival_time")
+
+
+        queryset = self.queryset
+        if departure_time:
+            departure_date= datetime.strptime(departure_time, "%Y-%m-%d").date()
+            queryset = queryset.filter(departure_time__departure_date=departure_time)
+
+        if arrival_time:
+            arrival_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
+            queryset = queryset.filter(departure_time__arrival_date=departure_time)
+
+        if route:
+            queryset = queryset.filter(route_icontains=route)
+
+        return queryset.distinct()
+
+
+    def get_serializer_class(self):
+        # if self.action == "list":
+        #     return FlightListSerializer
+
+        if self.action == "retrieve":
+            return FlightDetailSerializer
+        return FlightDetailSerializer
 #
+#         if self.action == "upload_image":
+#             return MovieImageSerializer
 #
-# def get_queryset(self):
-#     """Retrieve the movies with filters"""
-#     route = self.request.query_params.get("route")
-#     departure_time = self.request.query_params.get("departure_time")
-#     arrival_time = self.request.query_params.get("arrival_time")
-#
-#     queryset = self.queryset
-#
-#     if departure_time:
-#         queryset = queryset.filter(departure_time_icontains=departure_time)
-#
-#     if arrival_time:
-#         queryset = queryset.filter(arrival_time_icontains=arrival_time)
-#
-#     if route:
-#         queryset = queryset.filter(route_icontains=route)
-#
-#     return queryset.distinct()
-#
+#         return Flighterializer
+# #
 #
 # def get_serializer_class(self):
 #     if self.action == "list":
@@ -247,9 +271,10 @@ class OrderViewSet(
     mixins.CreateModelMixin,
     GenericViewSet,
 ):
-    queryset = Order.objects.prefetch_related(
-        "tickets__movie_session__movie", "tickets__movie_session__cinema_hall"
-    )
+    queryset = Order.objects.all()
+    # prefetch_related(
+    #     "tickets__movie_session__movie", "tickets__movie_session__cinema_hall"
+    # ))
     serializer_class = OrderSerializer
 #     pagination_class = OrderPagination
 #     permission_classes = (IsAuthenticated,)

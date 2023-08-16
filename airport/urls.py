@@ -19,7 +19,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/airlines/", include("airplane.urls", namespace="airlines")),
+    path("api/airlines/", include("airlines.urls", namespace="airlines")),
     path("api/user/", include("user.urls", namespace="user")),
     # path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # path(
@@ -32,6 +32,6 @@ urlpatterns = [
     #     SpectacularRedocView.as_view(url_name="schema"),
     #     name="redoc",
     # ),
-    # path("__debug__/", include("debug_toolbar.urls")),
+    path("__debug__/", include("debug_toolbar.urls")),
 # ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ]

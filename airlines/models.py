@@ -59,9 +59,6 @@ class Crew(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
-
-
-
 class Route(models.Model):
     source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_airports")
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_airports")
@@ -103,6 +100,7 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
 
 class Ticket(models.Model):
     flight = models.ForeignKey(
