@@ -25,14 +25,14 @@ class FlightListSerializer(serializers.ModelSerializer):
     tickets_available = serializers.IntegerField()
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "tickets_available")
+        fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time", "tickets_available")
 
 
-class FlightListSerializer(serializers.ModelSerializer):
-    tickets_available = serializers.IntegerField()
+class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "tickets_available")
+        fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time")
+
 
 class FlightDetailSerializer(serializers.ModelSerializer):
     airplane_type = serializers.SlugRelatedField(
@@ -44,7 +44,7 @@ class FlightDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "airplane_type")
+        fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time", "airplane_type")
 
 class RouteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,8 +54,8 @@ class RouteSerializer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Route
-        fields = ("id", "source", "destination",)
+        model = Ticket
+        fields = ("id", "flight", "row", "seat",)
 
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs)
@@ -67,6 +67,15 @@ class TicketSerializer(serializers.ModelSerializer):
             serializers.ValidationError
         )
         return data
+
+class TicketDetailSerializer(serializers.ModelSerializer):
+    flight = FlightDetailSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "source", "destination", "route")
+
+
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -88,7 +97,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+    tickets = TicketDetailSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order

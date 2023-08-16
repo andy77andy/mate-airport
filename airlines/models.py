@@ -77,6 +77,7 @@ class Route(models.Model):
 
 
 class Flight(models.Model):
+    number = models.CharField(max_length=20)
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
     departure_time = models.DateTimeField()
@@ -86,7 +87,7 @@ class Flight(models.Model):
         ordering = ["-departure_time"]
 
     def __str__(self):
-        return f"{self.route}, str({self.departure_time})"
+        return f"{self.number}, {self.route}, str({self.departure_time})"
 
 
 class Order(models.Model):
@@ -111,9 +112,6 @@ class Ticket(models.Model):
     )
     row = models.IntegerField()
     seat = models.IntegerField()
-    order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name="tickets"
-    )
 
     @staticmethod
     def validate_seat_and_row(seat: int, seats_in_row: int, row: int, rows: int, error_to_raise):

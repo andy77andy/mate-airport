@@ -52,11 +52,19 @@ from datetime import datetime
 
 from django.db.models import F, Count
 from rest_framework import mixins, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
 
 from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType
 from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
-    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer
+    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer
+
+
+class AirplanePagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page-size"
+    max_page_size = 100
+    # pagination_class = AirplanePagination
 
 
 class AirplaneViewSet(
@@ -66,13 +74,17 @@ class AirplaneViewSet(
 ):
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
+    pagination_class = AirplanePagination
     # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
 
 class AirplaneTypeViewSet(
     viewsets.ModelViewSet,
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
+
+
 
 
 #
@@ -123,6 +135,11 @@ class CrewViewSet(
 #
 #
 #
+class FlightPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page-size"
+    max_page_size = 100
+
 
 class FlightViewSet(
     viewsets.ModelViewSet,
@@ -134,7 +151,7 @@ class FlightViewSet(
         )
     )
 
-#
+    pagination_class = FlightPagination
 # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #
@@ -167,17 +184,16 @@ class FlightViewSet(
 
 
     def get_serializer_class(self):
-        # if self.action == "list":
-        #     return FlightListSerializer
+        if self.action == "list":
+            return FlightListSerializer
 
         if self.action == "retrieve":
             return FlightDetailSerializer
-        return FlightDetailSerializer
-#
-#         if self.action == "upload_image":
-#             return MovieImageSerializer
-#
-#         return Flighterializer
+
+
+        # if self.action == "upload_image":
+        #     return MovieImageSerializer
+        return FlightSerializer
 # #
 #
 # def get_serializer_class(self):
@@ -215,10 +231,16 @@ class FlightViewSet(
 # def list(self, request, *args, **kwargs):
 #     return super().list(request, *args, **kwargs)
 #
-#
+class RoutePagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page-size"
+    max_page_size = 100
+
+
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
+    pagination_class = RoutePagination
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 #     def get_queryset(self):
@@ -259,12 +281,10 @@ class RouteViewSet(viewsets.ModelViewSet):
 #         return super().list(request, *args, **kwargs)
 #
 #
-# class OrderPagination(PageNumberPagination):
-#     page_size = 10
-#     max_page_size = 100
-#
-#
-
+class OrderPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page-size"
+    max_page_size = 100
 
 class OrderViewSet(
     mixins.ListModelMixin,
@@ -276,13 +296,16 @@ class OrderViewSet(
     #     "tickets__movie_session__movie", "tickets__movie_session__cinema_hall"
     # ))
     serializer_class = OrderSerializer
-#     pagination_class = OrderPagination
+    pagination_class = OrderPagination
 #     permission_classes = (IsAuthenticated,)
 #
 
     """The function limits the ability of the user to view other user's orders"""
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        queryset = self.queryset.filter(user=self.request.user)
+
+        if self.action == "list":
+            queryset = queryset.select_related("tickets__flight__airplane")
 #
 #     def get_serializer_class(self):
 #         if self.action == "list":
@@ -292,6 +315,11 @@ class OrderViewSet(
     """The function automatically create an order exactly for current user"""
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+        return OrderSerializer
 
 # class MovieViewSet(
 #     mixins.ListModelMixin,
