@@ -135,7 +135,7 @@ class Ticket(models.Model):
 
 
     class Meta:
-        unique_together = ("seat", "row")
+        unique_together = ("flight", "seat", "row")
     #
     # def save(
     #     self,

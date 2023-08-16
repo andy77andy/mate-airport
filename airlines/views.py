@@ -243,19 +243,19 @@ class RouteViewSet(viewsets.ModelViewSet):
     pagination_class = RoutePagination
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
-#     def get_queryset(self):
-#         source = self.request.query_params.get("source")
-#         destination = self.request.query_params.get("destination")
-#
-#         queryset = self.queryset
-#
-#         if source:
-#             queryset = queryset.filter(source_icontains=source)
-#
-#         if destination:
-#             queryset = queryset.filter(destination_icontains=destination)
-#
-#         return queryset
+    def get_queryset(self):
+        source = self.request.query_params.get("source")
+        destination = self.request.query_params.get("destination")
+
+        queryset = self.queryset
+
+        if source:
+            queryset = queryset.filter(source_icontains=source)
+
+        if destination:
+            queryset = queryset.filter(destination_icontains=destination)
+
+        return queryset
 #
 #     @extend_schema(
 #         parameters=[
