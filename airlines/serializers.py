@@ -1,13 +1,18 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from airlines.models import Airplane, Crew, Flight, Route, Order, Ticket, AirplaneType
+from airlines.models import Airplane, Crew, Flight, Route, Order, Ticket, AirplaneType, Airport
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
         fields = ("id", "name", "rows", "seats_in_row", "airplane_type",)
+
+class AirportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airport
+        fields = ("id", "name", "close_big_city", )
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -21,8 +26,18 @@ class CrewSerializer(serializers.ModelSerializer):
         fields = ("id", "first_name", "last_name",)
 
 
+class RouteSerializer(serializers.ModelSerializer):
+    source = serializers.StringRelatedField(many=False)
+    destination = serializers.StringRelatedField(many=False)
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination",)
+
+
 class FlightListSerializer(serializers.ModelSerializer):
     tickets_available = serializers.IntegerField()
+    route = serializers.StringRelatedField(many=False)
+
     class Meta:
         model = Flight
         fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time", "tickets_available")
@@ -35,21 +50,23 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightDetailSerializer(serializers.ModelSerializer):
-    airplane_type = serializers.SlugRelatedField(
-        source="airplane",
+    route = RouteSerializer(many=False, read_only=True)
+    airplane = serializers.SlugRelatedField(
         many=False,
         read_only=True,
-        slug_field="airplane_type"
+        slug_field="name"
+    )
+    airplane_type = serializers.SlugRelatedField(
+        source="airplane.airplane-type",
+        many=False,
+        read_only=True,
+        slug_field="name"
     )
 
     class Meta:
         model = Flight
         fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time", "airplane_type")
 
-class RouteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Route
-        fields = ("id", "source", "destination",)
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -73,9 +90,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ("id", "source", "destination", "route")
-
-
+        fields = ("id", "flight")
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -85,8 +100,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ("id", "tickets", "created_at", )
 
-
-    '''redefine method create to allow create tivkets while creating order'''
+    """redefine method create to allow create tickets while creating order"""
     def create(self, validated_data):
         with transaction.atomic():
             tickets_data = validated_data.pop("tickets")
@@ -102,4 +116,3 @@ class OrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ("id", "tickets", "created_at", )
-

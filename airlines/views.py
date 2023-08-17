@@ -55,9 +55,10 @@ from rest_framework import mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
 
-from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType
+from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType, Airport
 from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
-    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer
+    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer, \
+    AirportSerializer
 
 
 class AirplanePagination(PageNumberPagination):
@@ -76,6 +77,24 @@ class AirplaneViewSet(
     serializer_class = AirplaneSerializer
     pagination_class = AirplanePagination
     # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+class AirportViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
+    queryset = Airport.objects.all()
+    serializer_class = AirportSerializer
+    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        """Retrieve the movies with filters"""
+        close_big_city = self.request.query_params.get("close_big_city")
+
+        if close_big_city:
+            queryset = queryset.filter(close_big_city__icontains=close_big_city)
+        return queryset
 
 
 class AirplaneTypeViewSet(
@@ -132,7 +151,6 @@ class CrewViewSet(
 #             return Response(serializer.data, status=status.HTTP_200_OK)
 #
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
 #
 #
 class FlightPagination(PageNumberPagination):
@@ -305,7 +323,9 @@ class OrderViewSet(
         queryset = self.queryset.filter(user=self.request.user)
 
         if self.action == "list":
-            queryset = queryset.select_related("tickets__flight__airplane")
+            queryset = queryset.prefetch_related("tickets__flight__airplane")
+
+        return queryset
 #
 #     def get_serializer_class(self):
 #         if self.action == "list":

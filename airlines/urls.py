@@ -6,12 +6,13 @@ from airlines.views import (
     CrewViewSet,
     FlightViewSet,
     RouteViewSet,
-    OrderViewSet, AirplaneTypeViewSet,
+    OrderViewSet, AirplaneTypeViewSet, AirportViewSet,
 )
 
 router = routers.DefaultRouter()
 router.register("airplanes", AirplaneViewSet)
 router.register("airplane_types", AirplaneTypeViewSet)
+router.register("airports", AirportViewSet)
 router.register("crew", CrewViewSet)
 router.register("flights", FlightViewSet)
 router.register("routes", RouteViewSet)

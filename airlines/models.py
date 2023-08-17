@@ -25,7 +25,7 @@ class Airport(models.Model):
     close_big_city = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}, {self.close_big_city}"
 
 
 class Airplane(models.Model):
@@ -77,7 +77,7 @@ class Route(models.Model):
 
 
 class Flight(models.Model):
-    number = models.CharField(max_length=20)
+    number = models.CharField(max_length=10, default="12-A-3D")
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
     departure_time = models.DateTimeField()
