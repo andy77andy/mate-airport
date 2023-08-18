@@ -7,31 +7,40 @@ from airlines.models import Airplane, Crew, Flight, Route, Order, Ticket, Airpla
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type",)
+        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "image")
+
 
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
-        fields = ("id", "name", "close_big_city", )
+        fields = ("id", "name", "close_big_city", "image")
 
+
+class CloseBigCityImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airport
+        fields = ("id", "image")
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AirplaneType
         fields = ("id", "name",)
 
+
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name",)
+        fields = ("id", "first_name", "last_name", "image")
 
 
 class RouteSerializer(serializers.ModelSerializer):
     source = serializers.StringRelatedField(many=False)
     destination = serializers.StringRelatedField(many=False)
+    # destination_city_image = serializers.ImageField(source="destination.image", read_only=False)
+
     class Meta:
         model = Route
-        fields = ("id", "source", "destination",)
+        fields = ("id", "source", "destination")
 
 
 class FlightListSerializer(serializers.ModelSerializer):
@@ -68,7 +77,6 @@ class FlightDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "number", "route", "airplane", "departure_time", "arrival_time", "airplane_type")
 
 
-
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
@@ -84,6 +92,7 @@ class TicketSerializer(serializers.ModelSerializer):
             serializers.ValidationError
         )
         return data
+
 
 class TicketDetailSerializer(serializers.ModelSerializer):
     flight = FlightDetailSerializer(many=False, read_only=True)

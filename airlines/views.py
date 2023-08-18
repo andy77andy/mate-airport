@@ -89,7 +89,7 @@ class AirportViewSet(
 
     def get_queryset(self):
         queryset = self.queryset
-        """Retrieve the movies with filters"""
+        """Retrieve the airports with filters"""
         close_big_city = self.request.query_params.get("close_big_city")
 
         if close_big_city:
@@ -250,7 +250,7 @@ class FlightViewSet(
 #     return super().list(request, *args, **kwargs)
 #
 class RoutePagination(PageNumberPagination):
-    page_size = 20
+    page_size = 5
     page_size_query_param = "page-size"
     max_page_size = 100
 
