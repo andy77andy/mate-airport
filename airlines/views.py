@@ -1,6 +1,5 @@
 # from django.shortcuts import render
 from datetime import datetime
-#
 # from django.db.models import F, Count
 # from drf_spectacular.types import OpenApiTypes
 # from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -50,12 +49,15 @@ from datetime import datetime
 #     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
 
-from django.db.models import F, Count
+from django.db.models import F, Count, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
 
 from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType, Airport
+from airlines.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
     FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer, \
     AirportSerializer
@@ -96,6 +98,32 @@ class AirportViewSet(
             queryset = queryset.filter(close_big_city__icontains=close_big_city)
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="title",
+                type=OpenApiTypes.STR,
+                description="Filter by title (ex. ?title=Inception)",
+                required=False,
+            ),
+            # OpenApiParameter(
+            #     "genres",
+            #     type={"type": "list", "items": {"type": "number"}},
+            #     description="Filter movies by genre ID (ex. ?genres=1,2)",
+            # ),
+            # OpenApiParameter(
+            #     "actors",
+            #     type={"type": "list", "items": {"type": "number"}},
+            #     description="Filter movies by actor ID (ex. ?actors=1,2)",
+            # ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """
+        this method is created for documentation, to use extend_schema
+        for filtering
+        """
+        return super().list(self, request, *args, **kwargs)
 
 class AirplaneTypeViewSet(
     viewsets.ModelViewSet,
@@ -171,8 +199,7 @@ class FlightViewSet(
 
     pagination_class = FlightPagination
 # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
-#
-#
+
     @staticmethod
     def _params_to_ints(qs):
         """Converts a list of string IDs to a list of integers"""
@@ -182,23 +209,52 @@ class FlightViewSet(
     def get_queryset(self):
         """Retrieve the movies with filters"""
         route = self.request.query_params.get("route")
-        departure_time = self.request.query_params.get("departure_time")
+        date = self.request.query_params.get("date")
         arrival_time = self.request.query_params.get("arrival_time")
 
 
         queryset = self.queryset
-        if departure_time:
-            departure_date= datetime.strptime(departure_time, "%Y-%m-%d").date()
-            queryset = queryset.filter(departure_time__departure_date=departure_time)
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+            queryset = queryset.filter(departure_time__date=date)
 
-        if arrival_time:
-            arrival_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
-            queryset = queryset.filter(departure_time__arrival_date=departure_time)
+        # if arrival_time:
+        #     arrival_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
+        #     queryset = queryset.filter(departure_time__arrival_date=departure_time)
 
         if route:
-            queryset = queryset.filter(route_icontains=route)
+            queryset = queryset.filter(
+             Q(route__source__close_big_city__icontains=route) |
+             Q(route__destination__close_big_city__icontains=route)
+    )
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "date",
+                type=OpenApiTypes.DATE,
+                description="Filter by departure_time (ex. ?date=2020-10-10)",
+            ),
+            OpenApiParameter(
+                "arrival_time",
+                type=OpenApiTypes.DATE,
+                description="Filter by arrival_time (ex. ?date=2020-10-10)",
+            ),
+            OpenApiParameter(
+                "route",
+                type=OpenApiTypes.STR,
+                description="Filter by route(ex. ?route=Nice)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """
+        this method is created for documentation, to use extend_schema
+        for filtering
+        """
+        return super().list(self, request, *args, **kwargs)
 
 
     def get_serializer_class(self):
@@ -212,6 +268,8 @@ class FlightViewSet(
         # if self.action == "upload_image":
         #     return MovieImageSerializer
         return FlightSerializer
+
+
 # #
 #
 # def get_serializer_class(self):
@@ -259,7 +317,7 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     pagination_class = RoutePagination
-#     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 #
     def get_queryset(self):
         source = self.request.query_params.get("source")
@@ -268,13 +326,34 @@ class RouteViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         if source:
-            queryset = queryset.filter(source_icontains=source)
+            queryset = queryset.filter(source__close_big_city__icontains=source)
 
         if destination:
-            queryset = queryset.filter(destination_icontains=destination)
+            queryset = queryset.filter(source__close_big_city__icontains=destination)
 
         return queryset
 #
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type=OpenApiTypes.STR,
+                description="Filter by source close big city (ex. ?source=Nice",
+            ),
+            OpenApiParameter(
+                "destination",
+                type=OpenApiTypes.STR,
+                description="Filter by destination close big city (ex. ?destination=Nice)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """
+        this method is created for documentation, to use extend_schema
+        for filtering
+        """
+        return super().list(self, request, *args, **kwargs)
 #     @extend_schema(
 #         parameters=[
 #             OpenApiParameter(
