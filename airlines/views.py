@@ -61,7 +61,7 @@ from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType, 
 from airlines.permissions import IsAdminOrIfAuthenticatedReadOnly, IsAdminOrReadOnly
 from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
     FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer, \
-    AirportSerializer
+    AirportSerializer, AirportDetailSerializer
 
 
 class AirplanePagination(PageNumberPagination):
@@ -84,6 +84,7 @@ class AirplaneViewSet(
 
 class AirportViewSet(
     mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
@@ -99,6 +100,17 @@ class AirportViewSet(
         if close_big_city:
             queryset = queryset.filter(close_big_city__icontains=close_big_city)
         return queryset
+
+
+    def get_serializer_class(self):
+
+        if self.action == "retrieve":
+            return AirportDetailSerializer
+
+
+        # if self.action == "upload_image":
+        #     return MovieImageSerializer
+        return FlightSerializer
 
     @extend_schema(
         parameters=[

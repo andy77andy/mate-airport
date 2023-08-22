@@ -68,8 +68,8 @@ class Crew(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_airports")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_airports")
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_routes")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
 
     class Meta:
         ordering = ["source", "destination"]

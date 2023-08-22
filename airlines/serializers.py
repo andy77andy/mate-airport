@@ -18,13 +18,13 @@ class AirportSerializer(serializers.ModelSerializer):
 
 class AirportDetailSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
-    transfer = serializers.BooleanField()
-    destinations = serializers.CharField(source="destination_airports.source", many=True, read_only=True)
+    transfer = serializers.BooleanField(default=True)
+    destinations = serializers.CharField(source="destination_airports.source.name", read_only=True)
 
 
     class Meta:
         model = Airport
-        fields = ("id", "name", "close_big_city", "image", "transfer", "destinations ", )
+        fields = ("id", "name", "close_big_city", "image", "transfer", "destinations", )
 
 
 
