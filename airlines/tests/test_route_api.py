@@ -1,4 +1,4 @@
-from unittest import TestCase
+from django.test import TestCase
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -39,12 +39,12 @@ class AuthenticatedRouteApiTest(TestCase):
     def test_list_routes(self):
         airport1 = sample_airport(name="test1", close_big_city="Test city1",)
         airport2 = sample_airport(name="test2", close_big_city="Test city2",)
-        Route.objects.create(airport1, airport2)
+        Route.objects.create(source=airport1, destination=airport2)
 
         response = self.client.get(ROUTE_URL)
 
         routes = Route.objects.all()
-        serializer = RouteSerializer(routes)
+        serializer = RouteSerializer(routes, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)

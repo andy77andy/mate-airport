@@ -13,13 +13,27 @@ class AirplaneSerializer(serializers.ModelSerializer):
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
-        fields = ("id", "name", "close_big_city", "image")
+        fields = ("id", "name", "close_big_city",)
+
+
+class AirportDetailSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    transfer = serializers.BooleanField()
+    destinations = serializers.CharField(source="destination_airports.source", many=True, read_only=True)
+
+
+    class Meta:
+        model = Airport
+        fields = ("id", "name", "close_big_city", "image", "transfer", "destinations ", )
+
+
 
 
 class CloseBigCityImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = ("id", "image")
+
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
     class Meta:

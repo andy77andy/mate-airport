@@ -54,10 +54,11 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
 from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType, Airport
-from airlines.permissions import IsAdminOrIfAuthenticatedReadOnly
+from airlines.permissions import IsAdminOrIfAuthenticatedReadOnly, IsAdminOrReadOnly
 from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
     FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer, \
     AirportSerializer
@@ -67,7 +68,7 @@ class AirplanePagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page-size"
     max_page_size = 100
-    # pagination_class = AirplanePagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class AirplaneViewSet(
@@ -78,7 +79,8 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     pagination_class = AirplanePagination
-    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
+
 
 class AirportViewSet(
     mixins.CreateModelMixin,
@@ -87,7 +89,7 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -101,21 +103,11 @@ class AirportViewSet(
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="title",
+                name="close_big_city",
                 type=OpenApiTypes.STR,
-                description="Filter by title (ex. ?title=Inception)",
+                description="Filter by close_big_city (ex. ?close_big_city=Glasgow)",
                 required=False,
             ),
-            # OpenApiParameter(
-            #     "genres",
-            #     type={"type": "list", "items": {"type": "number"}},
-            #     description="Filter movies by genre ID (ex. ?genres=1,2)",
-            # ),
-            # OpenApiParameter(
-            #     "actors",
-            #     type={"type": "list", "items": {"type": "number"}},
-            #     description="Filter movies by actor ID (ex. ?actors=1,2)",
-            # ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -125,32 +117,13 @@ class AirportViewSet(
         """
         return super().list(self, request, *args, **kwargs)
 
+
 class AirplaneTypeViewSet(
     viewsets.ModelViewSet,
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-
-
-
-
-#
-#     @action(
-#         methods=["POST"],
-#         detail=True,
-#         url_path="upload-image",
-#         permission_classes=[IsAdminUser],
-#     )
-#     def upload_image(self, request, pk=None):
-#         """Endpoint for uploading image to specific movie"""
-#         airplane = self.get_object()
-#         serializer = self.get_serializer(airplane, data=request.data)
-#
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CrewViewSet(
@@ -161,26 +134,9 @@ class CrewViewSet(
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    # permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
-#
-#     @action(
-#         methods=["POST"],
-#         detail=True,
-#         url_path="upload-image",
-#         permission_classes=[IsAdminUser],
-#     )
-#     def upload_image(self, request, pk=None):
-#         """Endpoint for uploading image to specific movie"""
-#         crew = self.get_object()
-#         serializer = self.get_serializer(crew, data=request.data)
-#
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
 class FlightPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page-size"
@@ -197,8 +153,8 @@ class FlightViewSet(
         )
     )
 
-    pagination_class = FlightPagination
-# permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    # pagination_class = FlightPagination
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     @staticmethod
     def _params_to_ints(qs):
@@ -207,20 +163,19 @@ class FlightViewSet(
 
 
     def get_queryset(self):
-        """Retrieve the movies with filters"""
+        """Retrieve the flights with filters"""
         route = self.request.query_params.get("route")
         date = self.request.query_params.get("date")
-        arrival_time = self.request.query_params.get("arrival_time")
-
+        arrival_date = self.request.query_params.get("arrival_date")
 
         queryset = self.queryset
         if date:
             date = datetime.strptime(date, "%Y-%m-%d").date()
             queryset = queryset.filter(departure_time__date=date)
 
-        # if arrival_time:
-        #     arrival_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
-        #     queryset = queryset.filter(departure_time__arrival_date=departure_time)
+        if arrival_date:
+            arrival_date = datetime.strptime(arrival_date, "%Y-%m-%d").date()
+            queryset = queryset.filter(departure_time__arrival_date=arrival_date)
 
         if route:
             queryset = queryset.filter(
@@ -283,29 +238,7 @@ class FlightViewSet(
 #         return MovieImageSerializer
 #
 #     return MovieSerializer
-#
-#
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(
-#             "genres",
-#             type={"type": "list", "items": {"type": "number"}},
-#             description="Filter by genre id (ex. ?genres=2,5)",
-#         ),
-#         OpenApiParameter(
-#             "actors",
-#             type={"type": "list", "items": {"type": "number"}},
-#             description="Filter by actor id (ex. ?actors=2,5)",
-#         ),
-#         OpenApiParameter(
-#             "title",
-#             type=OpenApiTypes.STR,
-#             description="Filter by movie title (ex. ?title=fiction)",
-#         ),
-#     ]
-# )
-# def list(self, request, *args, **kwargs):
-#     return super().list(request, *args, **kwargs)
+
 #
 class RoutePagination(PageNumberPagination):
     page_size = 5
@@ -316,9 +249,10 @@ class RoutePagination(PageNumberPagination):
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
-    pagination_class = RoutePagination
+    # pagination_class = RoutePagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
-#
+
+
     def get_queryset(self):
         source = self.request.query_params.get("source")
         destination = self.request.query_params.get("destination")
@@ -395,8 +329,7 @@ class OrderViewSet(
     # ))
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
-#     permission_classes = (IsAuthenticated,)
-#
+    permission_classes = (IsAuthenticated,)
 
     """The function limits the ability of the user to view other user's orders"""
     def get_queryset(self):
@@ -412,7 +345,7 @@ class OrderViewSet(
 #             return OrderListSerializer
 #
 #         return OrderSerializer
-    """The function automatically create an order exactly for current user"""
+    """The function automatically create an order exclusively for current user"""
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

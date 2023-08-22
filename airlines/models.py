@@ -21,7 +21,7 @@ def image_file_path(instance, filename):
 
 
 class AirplaneType(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -29,7 +29,7 @@ class AirplaneType(models.Model):
 
 class Airport(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    close_big_city = models.CharField(max_length=255, unique=True)
+    close_big_city = models.CharField(max_length=255)
     image = models.ImageField(null=True, upload_to=image_file_path)
 
     def __str__(self):
@@ -131,7 +131,7 @@ class Ticket(models.Model):
             })
 
     def clean(self):
-        Ticket.validate_ticket(
+        Ticket.validate_seat_and_row(
             self.row,
             self.seat,
             self.flight.airplane.seats_in_row,
@@ -140,8 +140,8 @@ class Ticket(models.Model):
         )
 
 
-    class Meta:
-        unique_together = ("flight", "seat", "row")
+    # class Meta:
+        # unique_together = ("flight", "seat", "row")
     #
     # def save(
     #     self,
