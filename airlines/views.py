@@ -139,10 +139,7 @@ class AirplaneTypeViewSet(
 
 
 class CrewViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    GenericViewSet,
+    viewsets.ModelViewSet,
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
