@@ -21,12 +21,9 @@ class AirportDetailSerializer(serializers.ModelSerializer):
     transfer = serializers.BooleanField(default=True)
     destinations = serializers.CharField(source="destination_airports.source.name", read_only=True)
 
-
     class Meta:
         model = Airport
         fields = ("id", "name", "close_big_city", "image", "transfer", "destinations", )
-
-
 
 
 class CloseBigCityImageSerializer(serializers.ModelSerializer):

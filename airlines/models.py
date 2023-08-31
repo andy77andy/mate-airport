@@ -77,10 +77,6 @@ class Route(models.Model):
     def __str__(self):
         return f"{self.source} - {self.destination}"
 
-    # @property
-    # def flying_time(self):
-    #     return f""
-
 
 class Flight(models.Model):
     number = models.CharField(max_length=10, default="12-A-3D")
@@ -139,22 +135,6 @@ class Ticket(models.Model):
             ValidationError,
         )
 
-
-    # class Meta:
-        # unique_together = ("flight", "seat", "row")
-    #
-    # def save(
-    #     self,
-    #     force_insert=False,
-    #     force_update=False,
-    #     using=None,
-    #     update_fields=None,
-    # ):
-    #     self.full_clean()
-    #     return super(Ticket, self).save(
-    #         force_insert, force_update, using, update_fields
-    #     )
-
     def __str__(self):
         return (
             f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
@@ -163,5 +143,3 @@ class Ticket(models.Model):
     class Meta:
         unique_together = ("flight", "row", "seat")
         ordering = ["row", "seat"]
-
-# Create your models here.
