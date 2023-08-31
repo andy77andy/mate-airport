@@ -35,10 +35,7 @@ class AirplaneViewSet(
 
 
 class AirportViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
+    viewsets.ModelViewSet,
 ):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
@@ -51,14 +48,18 @@ class AirportViewSet(
 
         if close_big_city:
             queryset = queryset.filter(close_big_city__icontains=close_big_city)
+
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related("destination_routes", "source_routes")
+
         return queryset
 
     def get_serializer_class(self):
 
-        if self.action == "retrieve":
+        if self.action in ("retrieve", "update"):
             return AirportDetailSerializer
 
-        return FlightSerializer
+        return AirportSerializer
 
     @extend_schema(
         parameters=[
@@ -110,7 +111,6 @@ class FlightViewSet(
         )
     )
 
-    # pagination_class = FlightPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     @staticmethod
@@ -185,7 +185,6 @@ class RoutePagination(PageNumberPagination):
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
-    # pagination_class = RoutePagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):

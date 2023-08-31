@@ -45,9 +45,17 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
+    # source = serializers.StringRelatedField(many=False)
+    # destination = serializers.StringRelatedField(many=False)
+
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination")
+
+
+class RouteAirportSerializer(serializers.ModelSerializer):
     source = serializers.StringRelatedField(many=False)
     destination = serializers.StringRelatedField(many=False)
-    # destination_city_image = serializers.ImageField(source="destination.image", read_only=False)
 
     class Meta:
         model = Route
