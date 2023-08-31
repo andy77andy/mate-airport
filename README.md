@@ -1,20 +1,22 @@
 # mate-airport
 
-# Airport service
+# Airlines service
 
-- this project allows clients to plunge into the inner world of our theater,
-take a look at his story and get acquainted with his immediate plans
+- This project will help potential customers to plan their trips 
+in the most convenient way, 
+and briefly introduce the opportunities offered by our airlines
  
-## Check it out!
+[//]: # (## Check it out!)
 
-[Theatre service project]()
+[//]: # ()
+[//]: # ([Theatre service project]&#40;&#41;)
 
 ## Installation
 Python3 must be already installed
 
 ```python
-git clone github.com/andy77andy/theatre
-cd theatre
+git clone github.com/andy77andy/mate-airport
+cd airlines
 pythone -m venv venv 
 source venv/bin/activate
 pip install -r requirements.txt
@@ -26,10 +28,11 @@ password: m1m2m3m4
 
 
 ## Features
-1. Authentication abilities for Actor/User
-2. Managing theatre's inner life including play's details and upcoming plans
+1. Authentication abilities for Admin/User
+2. Managing airport operating hours, flight schedules
 3. Convenient and friendly admin panel
 
 
-## Demo
-![Interface](Demo.png)
+[//]: # (## Demo)
+
+[//]: # (![Interface]&#40;Demo.png&#41;)

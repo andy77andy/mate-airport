@@ -19,11 +19,18 @@ class AirportSerializer(serializers.ModelSerializer):
 class AirportDetailSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
     transfer = serializers.BooleanField(default=True)
-    destinations = serializers.CharField(source="destination_airports.source.name", read_only=True)
+    destinations = serializers.SerializerMethodField()
 
     class Meta:
         model = Airport
         fields = ("id", "name", "close_big_city", "image", "transfer", "destinations", )
+
+    def get_destinations(self, obj):
+        source_routes = Route.objects.filter(source=obj)
+        destination_airport_names = [
+            route.destination.name for route in source_routes
+        ]
+        return destination_airport_names
 
 
 class CloseBigCityImageSerializer(serializers.ModelSerializer):
