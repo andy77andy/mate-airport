@@ -68,8 +68,12 @@ class Crew(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_routes")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source_routes"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
+    )
 
     class Meta:
         ordering = ["source", "destination"]
@@ -94,9 +98,7 @@ class Flight(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.created_at)
@@ -106,25 +108,21 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    flight = models.ForeignKey(
-        Flight, on_delete=models.CASCADE, related_name="tickets"
-    )
-    order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name="tickets"
-    )
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
     row = models.IntegerField()
     seat = models.IntegerField()
 
     @staticmethod
-    def validate_seat_and_row(seat: int, seats_in_row: int, row: int, rows: int, error_to_raise):
+    def validate_seat_and_row(
+        seat: int, seats_in_row: int, row: int, rows: int, error_to_raise
+    ):
         if not (1 <= seat <= seats_in_row):
-            raise error_to_raise({
-                "seat": f"seat must be in the range [1, {seats_in_row}]"
-            })
+            raise error_to_raise(
+                {"seat": f"seat must be in the range [1, {seats_in_row}]"}
+            )
         if not (1 <= row <= rows):
-            raise error_to_raise({
-                "seat": f"row must be in the range [1, {rows}]"
-            })
+            raise error_to_raise({"seat": f"row must be in the range [1, {rows}]"})
 
     def clean(self):
         Ticket.validate_seat_and_row(
@@ -136,9 +134,7 @@ class Ticket(models.Model):
         )
 
     def __str__(self):
-        return (
-            f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
-        )
+        return f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
 
     class Meta:
         unique_together = ("flight", "row", "seat")

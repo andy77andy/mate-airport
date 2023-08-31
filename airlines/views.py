@@ -1,6 +1,5 @@
 from datetime import datetime
 
-
 from django.db.models import F, Count, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -11,9 +10,19 @@ from rest_framework.viewsets import GenericViewSet
 
 from airlines.models import Airplane, Crew, Flight, Route, Order, AirplaneType, Airport
 from airlines.permissions import IsAdminOrIfAuthenticatedReadOnly, IsAdminOrReadOnly
-from airlines.serializers import AirplaneSerializer, CrewSerializer, RouteSerializer, OrderSerializer, \
-    FlightDetailSerializer, FlightListSerializer, AirplaneTypeSerializer, FlightSerializer, OrderListSerializer, \
-    AirportSerializer, AirportDetailSerializer
+from airlines.serializers import (
+    AirplaneSerializer,
+    CrewSerializer,
+    RouteSerializer,
+    OrderSerializer,
+    FlightDetailSerializer,
+    FlightListSerializer,
+    AirplaneTypeSerializer,
+    FlightSerializer,
+    OrderListSerializer,
+    AirportSerializer,
+    AirportDetailSerializer,
+)
 
 
 class AirplanePagination(PageNumberPagination):
@@ -55,7 +64,6 @@ class AirportViewSet(
         return queryset
 
     def get_serializer_class(self):
-
         if self.action in ("retrieve", "update"):
             return AirportDetailSerializer
 
@@ -104,11 +112,10 @@ class FlightPagination(PageNumberPagination):
 class FlightViewSet(
     viewsets.ModelViewSet,
 ):
-    queryset = Flight.objects.select_related("route", "airplane").annotate(
+    queryset = Flight.objects.select_related("route", "route", "airplane").annotate(
         tickets_available=(
-                F("airplane__rows") * F("airplane__seats_in_row")
-                - Count("tickets")
-        )
+            F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
+        ),
     )
 
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -135,9 +142,12 @@ class FlightViewSet(
 
         if route:
             queryset = queryset.filter(
-             Q(route__source__close_big_city__icontains=route) |
-             Q(route__destination__close_big_city__icontains=route)
+                Q(route__source__close_big_city__icontains=route)
+                | Q(route__destination__close_big_city__icontains=route)
             )
+
+        if self.action == "retrieve":
+            queryset = queryset.select_related("airplane__airplane_type")
         return queryset.distinct()
 
     @extend_schema(
@@ -183,7 +193,7 @@ class RoutePagination(PageNumberPagination):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related("source", "destination")
     serializer_class = RouteSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -200,7 +210,8 @@ class RouteViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(source__close_big_city__icontains=destination)
 
         return queryset
-#
+
+    #
 
     @extend_schema(
         parameters=[
@@ -241,6 +252,7 @@ class OrderViewSet(
     permission_classes = (IsAuthenticated,)
 
     """The function limits the ability of the user to view other user's orders"""
+
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
 
@@ -250,6 +262,7 @@ class OrderViewSet(
         return queryset
 
     """The function automatically create an order exclusively for current user"""
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

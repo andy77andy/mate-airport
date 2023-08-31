@@ -5,7 +5,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from airlines.models import Airport, Route, Flight, Airplane, AirplaneType, Crew
-from airlines.serializers import FlightListSerializer, AirportDetailSerializer, CrewSerializer
+from airlines.serializers import (
+    FlightListSerializer,
+    AirportDetailSerializer,
+    CrewSerializer,
+)
 
 CREW_URL = reverse("airlines:crew-list")
 
@@ -15,7 +19,6 @@ def detail_url(crew_id: int):
 
 
 def sample_crew(**params):
-
     defaults = {
         "first_name": "Jennis",
         "last_name": "Joplin",
@@ -28,7 +31,9 @@ def sample_crew(**params):
 class CrewApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user("test@test1.com", "test1234", is_staff=True)
+        self.user = get_user_model().objects.create_user(
+            "test@test1.com", "test1234", is_staff=True
+        )
         self.client.force_authenticate(self.user)
 
     def test_create_crew(self):
@@ -48,7 +53,7 @@ class CrewApiTest(TestCase):
         }
 
         url = detail_url(crew.id)
-        response = self.client.put(url, payload,  format="multipart")
+        response = self.client.put(url, payload, format="multipart")
         crew.refresh_from_db()
         response1 = self.client.get(CREW_URL)
         crew_list = Crew.objects.all()
@@ -56,4 +61,6 @@ class CrewApiTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response1.data[0], serializer.data[0])
-        self.assertEqual(crew_list[0].full_name, f"{payload['first_name']} {payload['last_name']}")
+        self.assertEqual(
+            crew_list[0].full_name, f"{payload['first_name']} {payload['last_name']}"
+        )

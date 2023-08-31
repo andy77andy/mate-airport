@@ -37,7 +37,7 @@ def sample_airplane(**params):
         "name": "Test",
         "rows": 3,
         "seats_in_row": 10,
-        "airplane_type": sample_airplane_type()
+        "airplane_type": sample_airplane_type(),
     }
     defaults.update(params)
 
@@ -51,10 +51,22 @@ class AuthenticatedRouteApiTest(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_list_flight(self):
-        airport1 = sample_airport(name="test1", close_big_city="Rome",)
-        airport2 = sample_airport(name="test2", close_big_city="Lviv",)
-        airport3 = sample_airport(name="test3", close_big_city="Riga", )
-        airport4 = sample_airport(name="test4", close_big_city="Oslo", )
+        airport1 = sample_airport(
+            name="test1",
+            close_big_city="Rome",
+        )
+        airport2 = sample_airport(
+            name="test2",
+            close_big_city="Lviv",
+        )
+        airport3 = sample_airport(
+            name="test3",
+            close_big_city="Riga",
+        )
+        airport4 = sample_airport(
+            name="test4",
+            close_big_city="Oslo",
+        )
         route1 = Route.objects.create(source=airport1, destination=airport2)
         route2 = Route.objects.create(source=airport3, destination=airport4)
         airplane1 = sample_airplane()
@@ -65,7 +77,7 @@ class AuthenticatedRouteApiTest(TestCase):
             route=route1,
             airplane=airplane1,
             departure_time="2020-10-08 18:00:00",
-            arrival_time="2020-10-08 18:00:00"
+            arrival_time="2020-10-08 18:00:00",
         )
 
         flight2 = Flight.objects.create(
@@ -76,9 +88,8 @@ class AuthenticatedRouteApiTest(TestCase):
             arrival_time=datetime(2023, 8, 22, 10, 30),
         )
         flights = Flight.objects.annotate(
-         tickets_available=(
-                F("airplane__rows") * F("airplane__seats_in_row")
-                - Count("tickets")
+            tickets_available=(
+                F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
             )
         )
         """Create response from flight-list"""
@@ -88,8 +99,12 @@ class AuthenticatedRouteApiTest(TestCase):
         response2 = self.client.get(FLIGHT_URL, {"date": "2023-08-21"})
 
         serializer = FlightListSerializer(flights, many=True)
-        serializer1 = FlightListSerializer(flights[1],)
-        serializer2 = FlightListSerializer(flights[1],)
+        serializer1 = FlightListSerializer(
+            flights[1],
+        )
+        serializer2 = FlightListSerializer(
+            flights[1],
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)

@@ -6,7 +6,9 @@ from airlines.views import (
     CrewViewSet,
     FlightViewSet,
     RouteViewSet,
-    OrderViewSet, AirplaneTypeViewSet, AirportViewSet,
+    OrderViewSet,
+    AirplaneTypeViewSet,
+    AirportViewSet,
 )
 
 router = routers.DefaultRouter()
