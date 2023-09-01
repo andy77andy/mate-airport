@@ -73,8 +73,8 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    # source = serializers.StringRelatedField(many=False)
-    # destination = serializers.StringRelatedField(many=False)
+    source = AirportSerializer(many=False)
+    destination = AirportSerializer(many=False)
 
     class Meta:
         model = Route

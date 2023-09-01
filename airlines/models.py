@@ -78,9 +78,6 @@ class Route(models.Model):
     class Meta:
         ordering = ["source", "destination"]
 
-    def __str__(self):
-        return f"{self.source} - {self.destination}"
-
 
 class Flight(models.Model):
     number = models.CharField(max_length=10, default="12-A-3D")

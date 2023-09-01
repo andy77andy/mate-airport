@@ -112,7 +112,7 @@ class FlightPagination(PageNumberPagination):
 class FlightViewSet(
     viewsets.ModelViewSet,
 ):
-    queryset = Flight.objects.select_related("route", "route", "airplane").annotate(
+    queryset = Flight.objects.select_related("route__destination", "route__source", "airplane").annotate(
         tickets_available=(
             F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
         ),
