@@ -211,8 +211,6 @@ class RouteViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    #
-
     @extend_schema(
         parameters=[
             OpenApiParameter(
