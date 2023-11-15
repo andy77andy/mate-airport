@@ -6,8 +6,6 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from airlines.models import Airport, Route, Flight, Airplane, AirplaneType, Crew
 from airlines.serializers import (
-    FlightListSerializer,
-    AirportDetailSerializer,
     CrewSerializer,
 )
 
@@ -37,7 +35,6 @@ class CrewApiTest(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_create_crew(self):
-        crew = sample_crew()
 
         response = self.client.get(CREW_URL)
         crew = Crew.objects.all()
@@ -45,7 +42,7 @@ class CrewApiTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_crew_with_image(self):
+    def test_update_crew(self):
         crew = sample_crew()
         payload = {
             "first_name": "Hanna",

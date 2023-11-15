@@ -44,7 +44,7 @@ def sample_airplane(**params):
     return Airplane.objects.create(**defaults)
 
 
-class AuthenticatedRouteApiTest(TestCase):
+class AuthenticatedFlightApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user("test@test1.com", "test1234")
